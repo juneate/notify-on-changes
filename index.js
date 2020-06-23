@@ -23,49 +23,50 @@ const moveFileToOld = () => {
 const checkSite = () => {
 
 	(async () => {
-			await screenshot.file('https://hastingscorktown.resurva.com', `${path}new.png`)
-	})()
+		await screenshot.file('https://hastingscorktown.resurva.com', `${path}new.png`)
+		// screenshot.fromURL("https://hastingscorktown.resurva.com", `${path}new.png`, () => {
 
-	// screenshot.fromURL("https://hastingscorktown.resurva.com", `${path}new.png`, () => {
+		try {
+			if (fs.existsSync(`${path}prev.png`)) {
+				compare(`${path}new.png`, `${path}prev.png`, (error, {equal}) => {
 
-	try {
-		if (fs.existsSync(`${path}prev.png`)) {
-			compare(`${path}new.png`, `${path}prev.png`, (error, {equal}) => {
+					if (!equal) {
+						notifier.notify({
+							'title': 'Hastings Barber Shop',
+							'subtitle': 'Something has changed',
+							'message': 'Site may now be open for appointment bookings',
+							'icon': './img/hastings.jpeg',
+							'contentImage': `${path}new.png`,
+							'open': "https://hastingscorktown.resurva.com",
+							'sound': 'Submarine',
+							'wait': true
+						})
+						notifier.on('click', (obj, options) => {
+							clearInterval(interval)
+						})
+						
+						// Delete file
+						try {
+							fs.unlinkSync(`${path}new.png`)
+						} catch(e) {
+							console.error(e)
+						}
 
-				if (!equal) {
-					notifier.notify({
-						'title': 'Hastings Barber Shop',
-						'subtitle': 'Something has changed',
-						'message': 'Site may now be open for appointment bookings',
-						'icon': './img/hastings.jpeg',
-						'contentImage': `${path}new.png`,
-						'open': "https://hastingscorktown.resurva.com",
-						'sound': 'Submarine',
-						'wait': true
-					})
-					notifier.on('click', (obj, options) => {
-						clearInterval(interval)
-					})
-					
-					// Delete file
-					try {
-						fs.unlinkSync(`${path}new.png`)
-					} catch(e) {
-						console.error(e)
+					} else {
+						console.log(`${new Date().toLocaleTimeString()}: Nothing yet.`)
+						moveFileToOld()
 					}
-
-				} else {
-					console.log(`Nothing yet.`)
-					moveFileToOld()
-				}
-			})
-		} else {
-			moveFileToOld()
+				})
+			} else {
+				moveFileToOld()
+			}
+		} catch(e) {
+			console.error(e)
 		}
-	} catch(e) {
-		console.error(e)
-	}
+
+	})()
 	// })
 }
 
 let interval = setInterval(checkSite, 5 * 60000) // 5 mins
+checkSite()
