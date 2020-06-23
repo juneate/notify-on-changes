@@ -4,7 +4,7 @@ const compare = require('looks-same')
 const notifier = require('node-notifier')
 const fs = require('fs')
 const path = `./img/`
-
+const url = 'https://hastingscabbagetown.resurva.com'
 
 const moveFileToOld = () => {
 	try { 
@@ -23,13 +23,14 @@ const moveFileToOld = () => {
 const checkSite = () => {
 
 	(async () => {
-		await screenshot.file('https://hastingscorktown.resurva.com', `${path}new.png`)
-		// screenshot.fromURL("https://hastingscorktown.resurva.com", `${path}new.png`, () => {
+		await screenshot.file(url, `${path}new.png`)
+		// screenshot.fromURL(url, `${path}new.png`, () => {
 
 		try {
 			if (fs.existsSync(`${path}prev.png`)) {
 				compare(`${path}new.png`, `${path}prev.png`, (error, {equal}) => {
 
+					// They're different, something has changed
 					if (!equal) {
 						notifier.notify({
 							'title': 'Hastings Barber Shop',
@@ -37,7 +38,7 @@ const checkSite = () => {
 							'message': 'Site may now be open for appointment bookings',
 							'icon': './img/hastings.jpeg',
 							'contentImage': `${path}new.png`,
-							'open': "https://hastingscorktown.resurva.com",
+							'open': url,
 							'sound': 'Submarine',
 							'wait': true
 						})
@@ -45,7 +46,7 @@ const checkSite = () => {
 							clearInterval(interval)
 						})
 						
-						// Delete file
+						// Delete file, but don't replace 'prev.png' since that's the old screenshot (keeps alert going)
 						try {
 							fs.unlinkSync(`${path}new.png`)
 						} catch(e) {
