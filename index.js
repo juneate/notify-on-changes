@@ -3,7 +3,6 @@ const compare = require('looks-same')
 const notifier = require('node-notifier')
 const fs = require('fs')
 const path = `./img/`
-// path.resolve(__dirname, 'settings.json')
 
 const moveFileToOld = () => {
 	try { 
