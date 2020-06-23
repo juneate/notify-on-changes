@@ -1,10 +1,11 @@
-// const screenshot = require("node-server-screenshot")
 const screenshot = require('capture-website')
 const compare = require('looks-same')
 const notifier = require('node-notifier')
 const fs = require('fs')
 const path = `./img/`
 const url = 'https://hastingscabbagetown.resurva.com'
+const interval = 5 * 60000 // 5 mins
+let timeout = setInterval(checkSite, timeout) 
 
 const moveFileToOld = () => {
 	try { 
@@ -23,15 +24,23 @@ const moveFileToOld = () => {
 const checkSite = () => {
 
 	(async () => {
-		await screenshot.file(url, `${path}new.png`)
-		// screenshot.fromURL(url, `${path}new.png`, () => {
-
+		console.log(`${new Date().toLocaleTimeString()}: Requesting screenshot`)
+		
+		try {
+			await screenshot.file(url, `${path}new.png`)
+		} catch (e) {
+			console.error(e)
+			// Does an error resolve the promise and hit the "then"?
+		}
+	})().then(() => {
 		try {
 			if (fs.existsSync(`${path}prev.png`)) {
+				console.log(`${new Date().toLocaleTimeString()}: Comparing for changes`)
 				compare(`${path}new.png`, `${path}prev.png`, (error, {equal}) => {
 
 					// They're different, something has changed
 					if (!equal) {
+						console.log(`${new Date().toLocaleTimeString()}: Something has changed!`)
 						notifier.notify({
 							'title': 'Hastings Barber Shop',
 							'subtitle': 'Something has changed',
@@ -43,7 +52,7 @@ const checkSite = () => {
 							'wait': true
 						})
 						notifier.on('click', (obj, options) => {
-							clearInterval(interval)
+							clearTimeout(timeout)
 						})
 						
 						// Delete file, but don't replace 'prev.png' since that's the old screenshot (keeps alert going)
@@ -54,20 +63,21 @@ const checkSite = () => {
 						}
 
 					} else {
-						console.log(`${new Date().toLocaleTimeString()}: Nothing yet.`)
+						console.log(`${new Date().toLocaleTimeString()}: Nothing yet`)
 						moveFileToOld()
 					}
 				})
 			} else {
+				console.log(`${new Date().toLocaleTimeString()}: Storing first screenshot`)
 				moveFileToOld()
 			}
+			setTimeout(checkSite, interval)
 		} catch(e) {
 			console.error(e)
 		}
 
-	})()
-	// })
+	})
 }
 
-let interval = setInterval(checkSite, 5 * 60000) // 5 mins
+
 checkSite()
