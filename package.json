@@ -18,8 +18,8 @@
   },
   "homepage": "https://github.com/juneate/scrape-site#readme",
   "dependencies": {
+    "capture-website": "^1.0.0",
     "looks-same": "^7.2.3",
-    "node-notifier": "^7.0.1",
-    "node-server-screenshot": "^0.2.4"
+    "node-notifier": "^7.0.1"
   }
 }

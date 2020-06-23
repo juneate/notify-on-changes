@@ -1,8 +1,10 @@
-const screenshot = require("node-server-screenshot")
+// const screenshot = require("node-server-screenshot")
+const screenshot = require('capture-website')
 const compare = require('looks-same')
 const notifier = require('node-notifier')
 const fs = require('fs')
 const path = `./img/`
+
 
 const moveFileToOld = () => {
 	try { 
@@ -19,38 +21,51 @@ const moveFileToOld = () => {
 	// If not, just rename
 
 const checkSite = () => {
-	screenshot.fromURL("https://hastingscorktown.resurva.com", `${path}new.png`, () => {
 
-		try {
-			if (fs.existsSync(`${path}prev.png`)) {
-				compare(`${path}new.png`, `${path}prev.png`, (error, {equal}) => {
-	
-					if (!equal) {
-						notifier.notify({
-							'title': 'Hastings Barber Shop',
-							'subtitle': 'Something has changed',
-							'message': 'Site may now be open for appointment bookings',
-							'icon': './img/hastings.jpeg',
-							'contentImage': `${path}new.png`,
-							'open': "https://hastingscorktown.resurva.com",
-							'sound': 'Submarine',
-							'wait': true
-						})
-						notifier.on('click', (obj, options) => {
-							clearInterval(interval)
-						})
-					} else {
-						console.log(`Nothing yet.`)
-						moveFileToOld()
+	(async () => {
+			await screenshot.file('https://hastingscorktown.resurva.com', `${path}new.png`)
+	})()
+
+	// screenshot.fromURL("https://hastingscorktown.resurva.com", `${path}new.png`, () => {
+
+	try {
+		if (fs.existsSync(`${path}prev.png`)) {
+			compare(`${path}new.png`, `${path}prev.png`, (error, {equal}) => {
+
+				if (!equal) {
+					notifier.notify({
+						'title': 'Hastings Barber Shop',
+						'subtitle': 'Something has changed',
+						'message': 'Site may now be open for appointment bookings',
+						'icon': './img/hastings.jpeg',
+						'contentImage': `${path}new.png`,
+						'open': "https://hastingscorktown.resurva.com",
+						'sound': 'Submarine',
+						'wait': true
+					})
+					notifier.on('click', (obj, options) => {
+						clearInterval(interval)
+					})
+					
+					// Delete file
+					try {
+						fs.unlinkSync(`${path}new.png`)
+					} catch(e) {
+						console.error(e)
 					}
-				})
-			} else {
-				moveFileToOld()
-			}
-		} catch(e) {
-			console.error(e)
+
+				} else {
+					console.log(`Nothing yet.`)
+					moveFileToOld()
+				}
+			})
+		} else {
+			moveFileToOld()
 		}
-	})
+	} catch(e) {
+		console.error(e)
+	}
+	// })
 }
 
-let interval = setInterval(checkSite, 7000)
+let interval = setInterval(checkSite, 5 * 60000) // 5 mins
