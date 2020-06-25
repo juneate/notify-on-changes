@@ -5,7 +5,9 @@ const fs = require('fs')
 const path = `./img/`
 const url = 'https://hastingscabbagetown.resurva.com'
 const interval = 5 * 60000 // 5 mins
-let timeout = setInterval(checkSite, timeout) 
+let timeout
+
+console.log = console.log.bind(console, `${new Date().toLocaleTimeString()}:`)
 
 const moveFileToOld = () => {
 	try { 
@@ -24,7 +26,7 @@ const moveFileToOld = () => {
 const checkSite = () => {
 
 	(async () => {
-		console.log(`${new Date().toLocaleTimeString()}: Requesting screenshot`)
+		console.log(`Requesting screenshot`)
 		
 		try {
 			await screenshot.file(url, `${path}new.png`)
@@ -35,12 +37,12 @@ const checkSite = () => {
 	})().then(() => {
 		try {
 			if (fs.existsSync(`${path}prev.png`)) {
-				console.log(`${new Date().toLocaleTimeString()}: Comparing for changes`)
+				console.log(`Comparing for changes`)
 				compare(`${path}new.png`, `${path}prev.png`, (error, {equal}) => {
 
 					// They're different, something has changed
 					if (!equal) {
-						console.log(`${new Date().toLocaleTimeString()}: Something has changed!`)
+						console.log(`Something has changed!`)
 						notifier.notify({
 							'title': 'Hastings Barber Shop',
 							'subtitle': 'Something has changed',
@@ -63,12 +65,12 @@ const checkSite = () => {
 						}
 
 					} else {
-						console.log(`${new Date().toLocaleTimeString()}: Nothing yet`)
+						console.log(`Nothing yet`)
 						moveFileToOld()
 					}
 				})
 			} else {
-				console.log(`${new Date().toLocaleTimeString()}: Storing first screenshot`)
+				console.log(`Storing first screenshot`)
 				moveFileToOld()
 			}
 			setTimeout(checkSite, interval)
